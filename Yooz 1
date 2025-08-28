@@ -1,0 +1,291 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { 
+  insertRepresentativeSchema,
+  insertCustomerSchema,
+  insertWarehouseLocationSchema,
+  insertInventoryItemSchema,
+  insertPaymentSchema
+} from "@shared/schema";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Representatives routes
+  app.get("/api/representatives", async (req, res) => {
+    try {
+      const representatives = await storage.getRepresentatives();
+      res.json(representatives);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch representatives" });
+    }
+  });
+
+  app.get("/api/representatives/:id", async (req, res) => {
+    try {
+      const representative = await storage.getRepresentative(req.params.id);
+      if (!representative) {
+        return res.status(404).json({ message: "Representative not found" });
+      }
+      res.json(representative);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch representative" });
+    }
+  });
+
+  app.post("/api/representatives", async (req, res) => {
+    try {
+      const data = insertRepresentativeSchema.parse(req.body);
+      const representative = await storage.createRepresentative(data);
+      res.status(201).json(representative);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid representative data" });
+    }
+  });
+
+  app.put("/api/representatives/:id", async (req, res) => {
+    try {
+      const data = insertRepresentativeSchema.partial().parse(req.body);
+      const representative = await storage.updateRepresentative(req.params.id, data);
+      if (!representative) {
+        return res.status(404).json({ message: "Representative not found" });
+      }
+      res.json(representative);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid representative data" });
+    }
+  });
+
+  app.delete("/api/representatives/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteRepresentative(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Representative not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete representative" });
+    }
+  });
+
+  // Customers routes
+  app.get("/api/customers", async (req, res) => {
+    try {
+      const customers = await storage.getCustomers();
+      res.json(customers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customers" });
+    }
+  });
+
+  app.get("/api/customers/:id", async (req, res) => {
+    try {
+      const customer = await storage.getCustomer(req.params.id);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.json(customer);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customer" });
+    }
+  });
+
+  app.post("/api/customers", async (req, res) => {
+    try {
+      const data = insertCustomerSchema.parse(req.body);
+      const customer = await storage.createCustomer(data);
+      res.status(201).json(customer);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid customer data" });
+    }
+  });
+
+  app.put("/api/customers/:id", async (req, res) => {
+    try {
+      const data = insertCustomerSchema.partial().parse(req.body);
+      const customer = await storage.updateCustomer(req.params.id, data);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.json(customer);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid customer data" });
+    }
+  });
+
+  app.delete("/api/customers/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteCustomer(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete customer" });
+    }
+  });
+
+  // Warehouse locations routes
+  app.get("/api/warehouses", async (req, res) => {
+    try {
+      const warehouses = await storage.getWarehouseLocations();
+      res.json(warehouses);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch warehouse locations" });
+    }
+  });
+
+  app.post("/api/warehouses", async (req, res) => {
+    try {
+      const data = insertWarehouseLocationSchema.parse(req.body);
+      const warehouse = await storage.createWarehouseLocation(data);
+      res.status(201).json(warehouse);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid warehouse data" });
+    }
+  });
+
+  app.put("/api/warehouses/:id", async (req, res) => {
+    try {
+      const data = insertWarehouseLocationSchema.partial().parse(req.body);
+      const warehouse = await storage.updateWarehouseLocation(req.params.id, data);
+      if (!warehouse) {
+        return res.status(404).json({ message: "Warehouse not found" });
+      }
+      res.json(warehouse);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid warehouse data" });
+    }
+  });
+
+  app.delete("/api/warehouses/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteWarehouseLocation(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Warehouse not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete warehouse" });
+    }
+  });
+
+  // Inventory items routes
+  app.get("/api/inventory", async (req, res) => {
+    try {
+      const items = await storage.getInventoryItems();
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch inventory items" });
+    }
+  });
+
+  app.get("/api/inventory/low-stock", async (req, res) => {
+    try {
+      const items = await storage.getLowStockItems();
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch low stock items" });
+    }
+  });
+
+  app.post("/api/inventory", async (req, res) => {
+    try {
+      const data = insertInventoryItemSchema.parse(req.body);
+      const item = await storage.createInventoryItem(data);
+      res.status(201).json(item);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid inventory item data" });
+    }
+  });
+
+  app.put("/api/inventory/:id", async (req, res) => {
+    try {
+      const data = insertInventoryItemSchema.partial().parse(req.body);
+      const item = await storage.updateInventoryItem(req.params.id, data);
+      if (!item) {
+        return res.status(404).json({ message: "Inventory item not found" });
+      }
+      res.json(item);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid inventory item data" });
+    }
+  });
+
+  app.delete("/api/inventory/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteInventoryItem(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Inventory item not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete inventory item" });
+    }
+  });
+
+  // Payments routes
+  app.get("/api/payments", async (req, res) => {
+    try {
+      const payments = await storage.getPayments();
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch payments" });
+    }
+  });
+
+  app.get("/api/payments/pending", async (req, res) => {
+    try {
+      const payments = await storage.getPendingPayments();
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pending payments" });
+    }
+  });
+
+  app.get("/api/payments/overdue", async (req, res) => {
+    try {
+      const payments = await storage.getOverduePayments();
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch overdue payments" });
+    }
+  });
+
+  app.post("/api/payments", async (req, res) => {
+    try {
+      const data = insertPaymentSchema.parse(req.body);
+      const payment = await storage.createPayment(data);
+      res.status(201).json(payment);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid payment data" });
+    }
+  });
+
+  app.put("/api/payments/:id", async (req, res) => {
+    try {
+      const data = insertPaymentSchema.partial().parse(req.body);
+      const payment = await storage.updatePayment(req.params.id, data);
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      res.json(payment);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid payment data" });
+    }
+  });
+
+  app.delete("/api/payments/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deletePayment(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete payment" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
